@@ -2,7 +2,7 @@
 
 (no English version - sorry!)
 
-CA2 é um algoritmo criado originalmente em Python para análise exploratória básica de dados, que visa trazer produtividade para analistas. De forma automática, o algoritmo trata arquivos em formato csv, xls e xlsx e realiza diversas análises:
+FCA2 é um algoritmo criado originalmente em Python para análise exploratória básica de dados, que visa trazer produtividade para analistas. De forma automática, o algoritmo trata arquivos em formato csv, xls e xlsx e realiza diversas análises:
 
 __ identificação de campos texto, campos numéricos inteiros e números decimais.
 
