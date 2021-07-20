@@ -5,8 +5,11 @@
 CA2 é um algoritmo criado originalmente em Python para análise exploratória básica de dados, que visa trazer produtividade para analistas. De forma automática, o algoritmo trata arquivos em formato csv, xls e xlsx e realiza diversas análises:
 
 __ identificação de campos texto, campos numéricos inteiros e números decimais.
+
 __ campos texto: quantidade de registros, duplicações e de categorias, top "n" categorias.
+
 __ campos numéricos: quantidade de registros, registros zerados, soma total, média, desvio, máximos e mínimos, amplitude, quartis. Mesmas descrições para a base descontando os registros zerados.
+
 
 Desenvolvido originalmente por Fabiano Castello (www.fabianocastello.com.br), é disponibilizado sob licença GNL3.0 para toda a comunidade. A versão web foi criada em streamlit (www.github.com/fabianocastello/fca2web), e o código original em Python também está disponível (www.github.com/fabianocastello/fca2). FCA2 é disponibilizado em beta: use por seu próprio risco. O código original está registrado sob DOI doi.org/10.6084/m9.figshare.9902417. A versão atual conta com contribuições de Marcos Pinto.
 
