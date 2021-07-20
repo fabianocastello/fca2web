@@ -30,16 +30,16 @@ FCA2 pode ser instalado num servidor da sua organização por um valor fixo mens
 __ FCA2web analisa arquivos CSV, XLS e XLSX.
 __ No caso de várias pastas em arquivos xls ou xlsx o FCA2 analisará a primeira delas.
 
-__ vírgula "," ou ponto e vírgula ";" em arquivos CSV: o FCA2 conta o número de ocorrências de cada tipo na primeira linha do arquivo, e considera como separador o maior número de ocorrências
+__ Vírgula "," ou ponto e vírgula ";" em arquivos CSV: o FCA2 conta o número de ocorrências de cada tipo na primeira linha do arquivo, e considera como separador o maior número de ocorrências
 
 
 ## EM DESENVOLVIMENTO (por prioridade)
 
-__ ajustar o alinhamento (talvez usando a apresentação dos dados em tabelas).
+__ Ajustar o alinhamento (talvez usando a apresentação dos dados em tabelas).
 
-__ colocar todas as informações juntas em um PDF para download.
+__ Colocar todas as informações juntas em um PDF para download.
 
-__ inserir data labels nos histogramas.
+__ Inserir data labels nos histogramas.
 
 
 

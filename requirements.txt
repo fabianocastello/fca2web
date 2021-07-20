@@ -3,5 +3,4 @@ requests
 pandas
 seaborn
 matplotlib
-glob
 PIL
