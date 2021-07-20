@@ -7,8 +7,6 @@ from pandas import ExcelFile
 from datetime import datetime
 from datetime import timedelta
 import time, socket
-import locale
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')  # Use '' for auto, or force e.g. to 'en_US.UTF-8'
 import seaborn as sns
 import matplotlib.pyplot as plt
 from glob import glob
