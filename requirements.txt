@@ -4,4 +4,4 @@ pandas==1.2.3
 seaborn==0.11.1
 matplotlib==3.3.4
 Pillow
-xlrd >= 1.0.0
+openpyxl
