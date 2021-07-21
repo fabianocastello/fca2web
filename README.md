@@ -1,4 +1,4 @@
-﻿# Versão na web: http://www.fabianocastello/fca2web
+﻿# Versão na web: http://www.fabianocastello.com.br/fca2web
 
 # FCA2web FC Auto Analyser v0.9 beta (jul/21)
 
