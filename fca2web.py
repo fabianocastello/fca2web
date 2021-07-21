@@ -21,8 +21,8 @@ caching.clear_cache()
 st.set_page_config(
         page_title="FCA2 - FCastell Auto Analyser")
         
-def run(max_freq, hist_bins):
-    global msg_count
+def run():
+    global msg_count, max_freq, hist_bins, max_dups, hist, mcorr
     st.markdown(f'''
     <body>
     <p style="font-size:50px;line-height: 25px"><i><b>FCA2</b></i><br>
@@ -37,12 +37,24 @@ def run(max_freq, hist_bins):
                               footer {visibility: hidden;}
                               </style>"""
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-    col1, col2 = st.beta_columns(2)
+    col1, col2, col3 = st.beta_columns(3)
     with col1:
         max_freq  = st.slider('numeros de categorias máximas nos campos texto:', 1, 20, max_freq)
     with col2:
         hist_bins = st.slider('qte de bins no histograma:', 1, 20, hist_bins)
-    
+    with col3:
+        max_dups = st.slider('qte de exemplos de duplicados:', 1, 10, max_dups)
+        
+    col1, col2 = st.beta_columns(2)
+    with col1:
+        hist  =  st.checkbox('Mostrar histogramas?', value=False)
+    with col2:
+        mcorr =  st.checkbox('Mostrar matriz de correlação?', value=False)
+
+ 
+    #print(max_freq, hist_bins, max_dups, hist)
+ 
+ 
     try:    del uploaded_files
     except: pass
         
@@ -91,7 +103,7 @@ def run(max_freq, hist_bins):
       <li>campos texto: quantidade de registros, duplicações e de categorias, top "n" categorias.</li>
       <li>campos numéricos: quantidade de registros, registros zerados, soma total, média, desvio, máximos e mínimos, amplitude, quartis. Mesmas descrições para a base descontando os registros zerados.</li>
     </ul></span><span style="font-size:16px ;line-height: 25px">
-    Desenvolvido originalmente por Fabiano Castello (<a href="http://www.fabianocastello.com.br">www.fabianocastello.com.br</a>), é disponibilizado sob licença GNL3.0 para toda a comunidade. A versão web foi criada em streamlit (<a href="http://www.github.com/fabianocastello/fca2web">www.github.com/fabianocastello/fca2web</a>), e o código original em Python também está disponível (<a href="http://www.github.com/fabianocastello/fca2">www.github.com/fabianocastello/fca2</a>). FCA2 é disponibilizado em beta: use por seu próprio risco. O código original está registrado sob DOI <a href="http://doi.org/10.6084/m9.figshare.9902417">doi.org/10.6084/m9.figshare.9902417</a>. A versão atual conta com contribuições de Marcos Pinto.</span></p><br>
+    Desenvolvido originalmente por Fabiano Castello (<a target="_blank" href ="http://www.fabianocastello.com.br">www.fabianocastello.com.br</a>), é disponibilizado sob licença GNL3.0 para toda a comunidade. A versão web foi criada em streamlit (<a target="_blank" href ="http://www.github.com/fabianocastello/fca2web">www.github.com/fabianocastello/fca2web</a>), e o código original em Python também está disponível (<a target="_blank" href ="http://www.github.com/fabianocastello/fca2">www.github.com/fabianocastello/fca2</a>). FCA2 é disponibilizado em beta: use por seu próprio risco. O código original está registrado sob DOI <a target="_blank" href ="http://doi.org/10.6084/m9.figshare.9902417">doi.org/10.6084/m9.figshare.9902417</a>.</span></p><br>
     <p style="font-size:20px;margin-bottom: -5px;"><b>Sobre LGPD, GRPR e confidencialidade de dados</b></p>
     <p style="font-size:16px;margin-bottom: -5px;">
     FCA2 cria containers a partir dos arquivos carregados para tratamento e destrói a informação assim que o processamento é realizado. Nenhuma informação é retida ou enviada para fora do site. Todos os arquivos tempororários geradaos são apagados.</p><br>
@@ -100,9 +112,13 @@ def run(max_freq, hist_bins):
     <p style="font-size:16px;margin-bottom: -5px;">
     Vamos trabalhar para melhorar cada vez mais o aplicativo. Neste momento o único "issue" conhecido é a questão do alinhamento dos resultados no browser, por um problema de fontes de HTML nos navegadores, particulamente referente aos "white spaces". </p><br>
     
+    <p style="font-size:20px;margin-bottom: -5px;"><b>Contribuições</b></p>
+    <p style="font-size:16px;margin-bottom: -5px;">
+    FCA2 é mantido pelo autor com contribuições da comunidade.<br>Thanks: Marcus Pinto, João Victor Mulle, Mateus Ricci, Vivian Sato. </p><br>
+    
     <p style="font-size:20px;margin-bottom: -5px;"><b>FCA2 na sua organização</b></p>
     <p style="font-size:16px;margin-bottom: -5px;">
-    FCA2 pode ser instalado num servidor da sua organização por um valor fixo mensal. Para mais informações contate a <a href="http://www.cdatalab.com.br">cDataLab</a>.</p> 
+    FCA2 pode ser instalado num servidor da sua organização por um valor fixo mensal. Para mais informações contate a <a target="_blank" target="_blank" href ="http://www.cdatalab.com.br">cDataLab</a>.</p> 
     </body>
     ''', unsafe_allow_html=True)
     return()
@@ -119,8 +135,9 @@ datatmp   = "./!data.tmp"   #arquivos temporários. Será limpo após o processa
 
 max_freq  = 10 #numeros de categorias máximas nos campos texto
 hist_bins = 10 #qte de bins no histograma 
+max_dups  = 4  #qte de exemplos de duplicados 
 
-FC_Auto_Analyser_Version = 'fca2web beta 0.9 (jul/21) '
+FC_Auto_Analyser_Version = 'fca2web beta 0.91 (jul/21) '
 
 #Criando diretórios se inexistentes
 dirs = ['!data.tmp','!data.out','!data.log','!data.in']
@@ -144,7 +161,7 @@ def log_write(msg, newline=False, addcont=True):
         st.markdown(f'''<body><p style="font-size:14px;margin-bottom: -5px;
                     font-family: monospace;"><br></p></body>''', unsafe_allow_html=True)
     msg = msg.replace('  ',' ')
-    cut = 120
+    cut = 100
     if addcont:
         full_msg  = (f'{msgC()} {msg}').strip()
     else:
@@ -159,7 +176,7 @@ def log_write(msg, newline=False, addcont=True):
         for msg in msgs:
             st.markdown(f'''<body><p style="font-size:14px;margin-bottom: -5px;
                     font-family: monospace" >
-                    {ident+msg}</p></body>''', unsafe_allow_html=True) 
+                    {ident+msg.strip()}</p></body>''', unsafe_allow_html=True) 
     return() #
 
 def sep(ser):
@@ -225,6 +242,7 @@ def analysis(file):
             log_write(f'1 coluna numérica (inteiro): [ {xext} ]' ) 
         elif xqte > 1: 
             log_write(f'{xqte} colunas numéricas (inteiro): [ {xext} ]' ) 
+        xqte_corr += xqte
     
         xext = '' ;  xqte = 0
         for x in df.columns:
@@ -274,7 +292,7 @@ def analysis(file):
                 if (ctmp_total-ctmp_final) == 0:
                     log_write(f"categorias = registros, zero duplicados", addcont=False) 
                 else:
-                    log_write("Freqs  [f.abs] [ f.rel%] [f.acc%] categorias (max = "+'{:n}'.format(max_freq), addcont=False)
+                    log_write("Freqs  [f.abs] [ f.rel%] [f.acc%] categorias (max="+'{:n})'.format(max_freq), addcont=False)
                     freq     = 0
                     freq_acc = 0
                     for key, value in ctmp_counts.iteritems():
@@ -285,6 +303,24 @@ def analysis(file):
                                              "] [ " +'{:>5,.1f}'.format(value/ctmp_total*100) +"%] ["  
                                                     +'{:>5,.1f}'.format(freq_acc*100) +"%] "  
                                              +str(key), addcont=False)   
+                                             
+                                             
+                ctmpD = pd.DataFrame(df[x], columns=[x])
+                if not dups == 0:
+                    dupsTMP = pd.concat(g for _, g in ctmpD.groupby(x) if len(g) > 1)
+                    dupsTMP = dupsTMP.groupby(x).size().reset_index()
+                    dupsTMP.sort_values(by=[0], ascending=False, inplace = True)
+                    dupsTMP.reset_index(drop=True)
+                    cont = 0
+                    dupsTX = '['
+                    for index, row in dupsTMP.iterrows():
+                        dupsTX += f'{row[x].strip()}({row[0]}), '
+                        cont += 1
+                        if cont >= max_dups: break
+                    dupsTX = dupsTX.strip()[:-1]+']'
+                    log_write(f"Duplicações (Eventos):", addcont=False, newline=True) 
+                    log_write(f"{dupsTX}", addcont=False) 
+                                             
                             
 
         ## CAMPOS NUMÉRICOS (INTEIROS e DECIMAIS)
@@ -343,10 +379,6 @@ def analysis(file):
                     txt +=       f'{round(ctmpZ.describe()[7],2):>40,}' if not z else ""
                     log_write(txt, addcont=False) 
  
-                    txt = f'{"Máximo:"  :<12}{round(ctmp.describe()[6],2):>24,}'
-                    txt +=       f'{round(ctmpZ.describe()[7],2):>40,}' if not z else "" 
-                    log_write(txt, addcont=False) 
- 
                     txt = f'{"Amplitude:"  :<12}{round(ctmp.describe()[7]-ctmp.describe()[3],2):>24,}'
                     txt +=       f'{round(ctmpZ.describe()[7]-ctmpZ.describe()[6],2):>40,}' if not z else ""
                     log_write(txt, addcont=False) 
@@ -364,52 +396,55 @@ def analysis(file):
                     log_write(txt, addcont=False) 
  
        
-                    grf = df[x].dropna()    
-                    grfINFO = grf.describe()
-                    max_height = (np.histogram(grf, bins=hist_bins)[0].max())
-                    max_lenght = (grfINFO[7]- grfINFO[3])
-                    sns.set_style("whitegrid")
-                    plt.figure(figsize=(11.7, 8.27))
-                    plt.xlim(grfINFO[3].round(0), grfINFO[7].round(0))
-                    plt.ylim(0, max_height*1.1)
-                    
-                    plt.text(0.03*max_lenght,-0.09*max_height,
-                             FC_Auto_Analyser_Version+'\n'+'http://github.com/fabianocastello/fca2web',
-                             fontsize=10, ha='left')
-                    
-                    sns_plot = sns.distplot(grf, bins=hist_bins, kde=False, color="purple", 
-                                 axlabel=False, rug=True)
-                    sns_plot = sns_plot.set_title("histograma de ["+grf.name+"]", {'size': '18'})
-                    img_file = file+'_HIST_'+grf.name+'.png'
-                    fig = sns_plot.get_figure().savefig(dataout+"/"+img_file)  #pdf: trocar sufixo
-                    plt.close()
-                    log_write('', addcont=False,newline=True)  
+                    if hist:
+                        grf = df[x].dropna()    
+                        grfINFO = grf.describe()
+                        max_height = (np.histogram(grf, bins=hist_bins)[0].max())
+                        max_lenght = (grfINFO[7]- grfINFO[3])
+                        sns.set_style("whitegrid")
+                        plt.figure(figsize=(11.7, 8.27))
+                        plt.xlim(grfINFO[3].round(0), grfINFO[7].round(0))
+                        plt.ylim(0, max_height*1.1)
+                        
+                        plt.text(0.03*max_lenght,-0.09*max_height,
+                                 FC_Auto_Analyser_Version+'\n'+'http://github.com/fabianocastello/fca2web',
+                                 fontsize=10, ha='left')
+                        
+                        sns_plot = sns.distplot(grf, bins=hist_bins, kde=False, color="purple", 
+                                     axlabel=False, rug=True)
+                        sns_plot = sns_plot.set_title("histograma de ["+grf.name+"]", {'size': '18'})
+                        img_file = file+'_HIST_'+grf.name+'.png'
+                        fig = sns_plot.get_figure().savefig(dataout+"/"+img_file)  #pdf: trocar sufixo
+                        plt.close()
+                        log_write('', addcont=False,newline=True)  
 
-                    image = Image.open(dataout+"/"+img_file)
-                    st.image(image, caption=img_file)                        
+                        image = Image.open(dataout+"/"+img_file)
+                        st.image(image, caption=img_file)                        
                         
 
         ## CORRELAÇÃO ENTRE VARIÁVEIS NUMÉRICAS
-        log_write("### Matriz de Correlação de Variáveis Numéricas",newline=True) 
-        if not xqte_corr == 0:
-            sns.set_style("whitegrid")
-            plt.figure(figsize=(11.7, 8.27))
-            plt.text(0.05, 2.2, FC_Auto_Analyser_Version+'\n'+'http://github.com/fabianocastello/fca2web',
-                     fontsize=10, ha='left')
-            sns_corr = sns.heatmap(df.corr())
-            sns_corr = sns_corr.set_title("Matriz de Correlação de Variáveis Numéricas", {'size': '18'})
-            sns_corr.get_figure().savefig(dataout+"/"+file+' CORR.png')
-            plt.close()
-            log_write('', addcont=False,newline=True)  
-            image = Image.open(dataout+"/"+file+' CORR.png')
-            st.image(image, caption=img_file)                        
-        else:
-            log_write('Não foram identificadas variáveis numéricas')
+        if mcorr:
+            log_write("### Matriz de Correlação de Variáveis Numéricas",newline=True) 
+            if not xqte_corr == 0:
+                sns.set_style("whitegrid")
+                plt.figure(figsize=(11.7, 8.27))
+                plt.text(0.05, 2.2, FC_Auto_Analyser_Version+'\n'+'http://github.com/fabianocastello/fca2web',
+                         fontsize=10, ha='left')
+                sns_corr = sns.heatmap(df.corr())
+                sns_corr = sns_corr.set_title("Matriz de Correlação de Variáveis Numéricas", {'size': '18'})
+                sns_corr.get_figure().savefig(dataout+"/"+file+' CORR.png')
+                plt.close()
+                log_write('', addcont=False,newline=True)  
+                image = Image.open(dataout+"/"+file+' CORR.png')
+                img_file = file+'_CORR.png'
+                st.image(image, caption=img_file)                        
+            else:
+                log_write('Não foram identificadas variáveis numéricas')
 
-        log_write(file+" ending. Bye!\n")
-        
-        log_write("Análise finalizada de "+file,newline=True) 
-        return(0)
+            log_write(file+" ending. Bye!\n")
+            
+            log_write("Análise finalizada de "+file,newline=True) 
+            return(0)
 
     #except Exception as erro:
     #    log_write("\n\n Erro Geral: "+str(erro) + "\n\n") 
@@ -418,5 +453,5 @@ def analysis(file):
 
 
 
-run(max_freq, hist_bins)
+run()
 
