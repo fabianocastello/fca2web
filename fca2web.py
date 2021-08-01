@@ -107,7 +107,7 @@ def run():
                                 
                 parâmetros = ''
                 remarks = ''
-                sizeKB     = round(os.stat(name).st_size/1024,2)
+                sizeKB     = int(round(os.stat(datain+"/"+name).st_size/1024,0))
                                 
                 analysis(name)
                 
