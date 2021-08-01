@@ -92,28 +92,28 @@ def run():
     if uploaded_file is not None:
         with open(os.path.join(datain,uploaded_file.name),"wb") as f:
             f.write(uploaded_file.getbuffer())
-    files = os.listdir(datain)
-    if len(files) != 0:
-        dfx = [i for i in files if ('XLSX' in i[-4:].upper()) or ('XLS' in i[-3:].upper())]
-        dfc = [i for i in files if 'CSV' in i[-3:].upper()] 
-        filesToWorkOn = dfx + dfc
-        msg_count  = 0
-        
-        del dfx, dfc, files
-        filesToWorkOn = sorted(filesToWorkOn) 
-        for name in filesToWorkOn:
-            st.markdown(f'''<body><p style="font-size:20px;margin-bottom: -5px;">
-                            Analisando <b>{name}</b></p></body>''', unsafe_allow_html=True)
-                            
-            parâmetros = ''
-            remarks = ''
-            sizeKB     = round(os.stat(name).st_size/1024,2)
-                            
-            analysis(name)
+        files = os.listdir(datain)
+        if len(files) != 0:
+            dfx = [i for i in files if ('XLSX' in i[-4:].upper()) or ('XLS' in i[-3:].upper())]
+            dfc = [i for i in files if 'CSV' in i[-3:].upper()] 
+            filesToWorkOn = dfx + dfc
+            msg_count  = 0
             
+            del dfx, dfc, files
+            filesToWorkOn = sorted(filesToWorkOn) 
+            for name in filesToWorkOn:
+                st.markdown(f'''<body><p style="font-size:20px;margin-bottom: -5px;">
+                                Analisando <b>{name}</b></p></body>''', unsafe_allow_html=True)
+                                
+                parâmetros = ''
+                remarks = ''
+                sizeKB     = round(os.stat(name).st_size/1024,2)
+                                
+                analysis(name)
+                
 
-        st.markdown(f'''<body><p style="font-size:15px;margin-bottom: -5px;"><br><br><br>
-                            <u><i>✅ Para analisar outro arquivo pressione F5</i></u></p></body>''', unsafe_allow_html=True)
+            st.markdown(f'''<body><p style="font-size:15px;margin-bottom: -5px;"><br><br><br>
+                                <u><i>✅ Para analisar outro arquivo pressione F5</i></u></p></body>''', unsafe_allow_html=True)
     
     st.markdown('''
     <body>
