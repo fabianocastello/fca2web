@@ -140,17 +140,17 @@ def run():
     <p style="font-size:16px;margin-bottom: -5px;">
     FCA2 é um algoritmo criado em Python para análise exploratória básica de dados, que visa trazer <b>produtividade</b> para analistas. De forma automática, o algoritmo trata arquivos em formato csv, xls e xlsx e realiza diversas análises: <span style="font-size:10px ;margin-bottom: -5px;"> 
     <ul style="margin-bottom: -5px;">
-      <li>identificação de colunas texto, colunas numéricas inteiras e numéricas decimais.</li>
-      <li>colunas texto: quantidade de registros, duplicações e de categorias, top "n" categorias.</li>
-      <li>colunas numéricas: quantidade de registros, registros zerados, soma total, média, desvio, máximos e mínimos, amplitude, quartis. Mesmas descrições para a base descontando os registros zerados.</li>
+      <li>identificação de colunas texto (categóricas), colunas numéricas inteiras e numéricas decimais.</li>
+      <li>colunas texto: quantidade de registros, registros ausentes, duplicações e categorias, top "n" categorias.</li>
+      <li>colunas numéricas: quantidade de registros, registros zerados, soma total, média, desvio, máximos e mínimos, amplitude, quartis. Mesmas análises para a base descontando os registros zerados, lembrando que zero é diferente de ausente :-).</li>
     </ul></span><span style="font-size:16px ;line-height: 25px"><br>
-    Desenvolvido originalmente por Fabiano Castello (<a target="_blank" href ="http://www.fabianocastello.com.br">www.fabianocastello.com.br</a>), é disponibilizado sob licença CC BY 4.0 para a comunidade. O código original está registrado sob DOI <a target="_blank" href ="http://doi.org/10.6084/m9.figshare.9902417">doi.org/10.6084/m9.figshare.9902417</a>. A versão web foi criada em streamlit e está disponível em (<a target="_blank" href ="http://www.github.com/fabianocastello/fca2web">www.github.com/fabianocastello/fca2web</a>). Se você usar esta aplicação em um artigo ou publicação pode incluir a citação "Castello, Fabiano (2019): <i>Python Code: FC Auto Analyser (FCA2)</i>. figshare. Software. https://doi.org/10.6084/m9.figshare.9902417.v1".</span> </p><br>
+    Desenvolvido originalmente por Fabiano Castello (<a target="_blank" href ="http://www.fabianocastello.com.br">www.fabianocastello.com.br</a>), é disponibilizado <b>gratuitamente</b> sob licença CC BY 4.0 para a comunidade. O código original está registrado sob DOI <a target="_blank" href ="http://doi.org/10.6084/m9.figshare.9902417">doi.org/10.6084/m9.figshare.9902417</a>. A versão web foi criada em streamlit e está disponível em (<a target="_blank" href ="http://www.github.com/fabianocastello/fca2web">www.github.com/fabianocastello/fca2web</a>). Se você usar esta aplicação em um artigo ou publicação pode incluir a citação "Castello, Fabiano (2019): <i>Python Code: FC Auto Analyser (FCA2)</i>. figshare. Software. https://doi.org/10.6084/m9.figshare.9902417.v1".</span> </p><br>
     
     <p style="font-size:20px;margin-bottom: -5px;"><b><i>What's New</i></b></p>
     <p style="font-size:16px;margin-bottom: -5px<span style="font-size:10px ;margin-bottom: -5px;"> 
     <ul style="margin-bottom: -5px;">
       <li>mudança do licenciamento para CC BY 4.0 (jul/21).</li>
-      <li>boxplot (ago/21).</li>
+      <li>boxplot, customização de colunas, arquivo exemplo e amostragem (ago/21).</li>
     </ul></span><span style="font-size:16px ;line-height: 25px"><br>
    
     <p style="font-size:20px;margin-bottom: -5px;"><b><i>Issues</i> conhecidos</b></p>
@@ -161,7 +161,7 @@ def run():
     <p style="font-size:16px;margin-bottom: -5px<span style="font-size:10px ;margin-bottom: -5px;"> 
     <ul style="margin-bottom: -5px;">
       <li>gerar um arquivo em PDF com a análise consolidada.</li>
-      <li>melhroar a formatação de saída dos resultados (em linha com o problema de formatação das "white spaces").</li>
+      <li>melhorar a formatação de saída dos resultados (em linha com o problema de formatação das "white spaces").</li>
     </ul></span><span style="font-size:16px ;line-height: 25px"><br>
     
     <p style="font-size:20px;margin-bottom: -5px;"><b>Sobre LGPD, GRPR e confidencialidade de dados</b></p>
