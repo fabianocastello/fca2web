@@ -130,7 +130,7 @@ def run():
                 
 
             st.markdown(f'''<body><p style="font-size:15px;margin-bottom: -5px;"><br><br><br>
-                                <u><i>✅ Para analisar outro arquivo pressione F5</i></u></p></body>''', unsafe_allow_html=True)
+                                <u>✅ <i>Para analisar outro arquivo pressione F5</i></u></p></body>''', unsafe_allow_html=True)
     
     st.markdown('''
     <body>
@@ -151,6 +151,7 @@ def run():
     <ul style="margin-bottom: -5px;">
       <li>mudança do licenciamento para CC BY 4.0 (jul/21).</li>
       <li>boxplot, customização de colunas, arquivo exemplo e amostragem (ago/21).</li>
+      <li>'tentativa automática de abrir o arquivo com engine Python e C(ago/21).</li>
     </ul></span><span style="font-size:16px ;line-height: 25px"><br>
    
     <p style="font-size:20px;margin-bottom: -5px;"><b><i>Issues</i> conhecidos</b></p>
@@ -194,7 +195,7 @@ hist_bins = 10 #qte de bins no histograma
 max_dups  =  5 #qte de exemplos de duplicados 
 sample    =  5 #qte de exemplos da coluna 
 
-FC_Auto_Analyser_Version = 'fca2web beta 0.92 (2021AGO01) '
+FC_Auto_Analyser_Version = 'fca2web beta 0.93 (2021AGO07) '
 
 #Criando diretórios se inexistentes
 dirs = ['!data.tmp','!data.out','!data.log','!data.in']
@@ -282,16 +283,31 @@ def analysis(file):
                 if separador == decimalcsv:
                     st.error('ALERTA!!! separador e parâmetro de decimais identicos. Verifique.')
                 if noheader:
-                    df = pd.read_csv(datain+"/"+file, encoding ='utf-8', engine='python', sep = separador, header=None, decimal=decimalcsv)
+                    try:
+                        df = pd.read_csv(datain+"/"+file, encoding ='utf-8', engine='python', sep = separador, header=None, decimal=decimalcsv)
+                    except Exception as erro:
+                        log_write("Erro! Tentando com engine C")
+                        df = pd.read_csv(datain+"/"+file, encoding ='utf-8', engine='c', sep = separador, header=None, decimal=decimalcsv)
+                        log_write("Base carregada com sucesso")
+
                     for c in df.columns:
                         df.rename({c:f'Coluna{c}'}, axis=1, inplace=True)
                        
                 else:
-                    df = pd.read_csv(datain+"/"+file, encoding ='utf-8', engine='python',
-                                        sep = separador, decimal=decimalcsv)
+                    log_write("Abrindo arquivo com engine Python")
+                    try:
+                        df = pd.read_csv(datain+"/"+file, encoding ='utf-8', engine='python',
+                                            sep = separador, decimal=decimalcsv)
+                    except Exception as erro:
+                        log_write("Erro! Tentando com engine C")
+                        df = pd.read_csv(datain+"/"+file, encoding ='utf-8', engine='c',
+                                            sep = separador, decimal=decimalcsv)
+                        log_write("Base carregada com sucesso")
+                                                    
             except Exception as erro:
                 log_write("Erro "+str(erro))
-                log_write("Abortando analise "+file+"\n")
+                log_write("Abortando analise "+file)
+                log_write("Sugestão: verifique se o arquivos está codificado como UTF-8")
                 return(-1)
         elif 'xls'in file:
             try:
