@@ -171,7 +171,7 @@ def run():
 
     <p style="font-size:20px;margin-bottom: -5px;"><b>Contribuições</b></p>
     <p style="font-size:16px;margin-bottom: -5px;">
-    FCA2 é mantido pelo autor com contribuições da comunidade.<br>Thanks: Marcus Pinto, João Victor Mulle, Mateus Ricci, Vivian Sato. <i>Para contribuir com o projeto faça um "fork" a partir do repositório <a target="_blank" href ="http://www.github.com/fabianocastello/fca2web">www.github.com/fabianocastello/fca2web</a></i>.</p><br>
+    FCA2 é mantido pelo autor com contribuições da comunidade.<br>Thanks: Marcus Pinto, João Victor Mulle, Mateus Ricci, Vivian Sato.<br><i>Para contribuir com o código do projeto faça um "fork" a partir do repositório <a target="_blank" href ="http://www.github.com/fabianocastello/fca2web">www.github.com/fabianocastello/fca2web</a>. Para sugerir melhorias, mesmo sem ter a menor noção de como fazer isso na linguagem Python, envie um email para <a href ="mailto:fca2@fabianocastello.com.br?Subject:Contribuição_FCA2">fca2@fabianocastello.com.br</a></i>.</p><br>
     
     <p style="font-size:20px;margin-bottom: -5px;"><b>FCA2 na sua organização</b></p>
     <p style="font-size:16px;margin-bottom: -5px;">
