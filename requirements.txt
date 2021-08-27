@@ -8,3 +8,4 @@ Pillow
 openpyxl
 pyarrow
 lz4
+pickle5
