@@ -17,7 +17,6 @@ from random import randrange
 import streamlit as st
 from streamlit import caching
 
-
 #global UserAgents, runningOn, parâmetros, remarks, sizeKB
 runningOn =  socket.gethostname()
 
@@ -40,7 +39,7 @@ st.set_page_config(
         
 def run():
     global msg_count, max_freq, hist_bins, max_dups
-    global hist, boxp, mcorr, noheader, sep_csv, filecst, dec_csv, sample
+    global hist, boxp, mcorr, noheader, sep_csv, filecst, dec_csv, sampleN
     global UserAgents, runningOn, parâmetros, remarks, sizeKB
 
     st.markdown(f'''
@@ -59,14 +58,14 @@ def run():
                               </style>"""
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-    max_freq  = st.sidebar.slider('Numero de categorias máximas nas colunas de texto:', 1, 20, max_freq,
+    max_freq  = st.sidebar.slider('Qte máxima de categorias nas colunas de texto:', 1, 20, max_freq,
     help=tool_tips('max_freq'))
     hist_bins = st.sidebar.slider('Qte de bins no histograma:', 1, 20, hist_bins,
     help=tool_tips('hist_bins'))
-    max_dups = st.sidebar.slider('Qte de exemplos de duplicados:', 1, 10, max_dups,
+    max_dups = st.sidebar.slider('Qte máxima de exemplos de duplicados:', 1, 10, max_dups,
     help=tool_tips('max_dups'))
-    sample = st.sidebar.slider('Qte de itens para amostragem:', 1, 10, sample,
-    help=tool_tips('sample'))
+    sampleN = st.sidebar.slider('Qte máxima de itens para amostragem:', 1, 10, sampleN,
+    help=tool_tips('sampleN'))
     hist  =  st.sidebar.checkbox('Mostrar histograma?', value=False,
     help=tool_tips('max_dups'))
     boxp  =  st.sidebar.checkbox('Mostrar boxplot?', value=False,
@@ -90,8 +89,14 @@ def run():
         
     titanic =  st.checkbox('Marque para ver uma demonstração (titanic.csv)', value=False,
     help=tool_tips('titanic'))
+    
+    with st.expander("Considerações sobre formatos de arquivos"):
+           st.write("""
+               FCA2 aceita arquivos formato CSV, Excel, Feather, Pickle e Pickle compactado (gzip). Se vc tem um arquivo CSV com extensão TXT ou outra, renomeie para que o arquivo seja analisado. O limite para análise é de 500Mb, porém para arquivos com mais de 50Mb o processamento será lento e, rodando localmente, todos os recursos serão consumidos a ponto de você achar que sua máquina travou. """)
+           st.write("""
+               **Em termos técnicos**, arquivos XLS muitas vezes são problemátivos, sempre que possível use XLSX; nos casos de arquivos CSV com problema de tokenização o FCA2 automaticamente tenta carregar usando o engine Python e, no caso de falha, o engine C++; Pickle funciona com protocolos 1 a 5, compactados com gzip ou não. Feather "vanilla" roda bem, mas dependendo da versão de pyarrow instalada não há suporte para lz4 e snappy.""")
         
-    uploaded_file = st.file_uploader('Informe o arquivo para análise. Acesse a barra lateral (">" à esquerda) para opções.', type =['csv','xls','xlsx'],
+    uploaded_file = st.file_uploader('Informe o arquivo para análise. Acesse a barra lateral (">" à esquerda) para opções.', type =['csv','xls','xlsx','feather','pkl','zpkl'],
                     accept_multiple_files=False, help=tool_tips('uploaded_file'))
     # UploadedFile(id=8, name='xxxxjr5mqz0i.csv', type='application/vnd.ms-excel', size=1211)
     
@@ -110,13 +115,14 @@ def run():
                 f.write(uploaded_file.getbuffer())
         files = os.listdir(datain)
         if len(files) != 0:
-            dfx = [i for i in files if ('XLSX' in i[-4:].upper()) or ('XLS' in i[-3:].upper())]
-            dfc = [i for i in files if 'CSV' in i[-3:].upper()] 
-            filesToWorkOn = dfx + dfc
+            dfs = [i for i in files if ('XLSX' in i[-4:].upper()) or 
+                                       ('XLS' in i[-3:].upper())  or 
+                                       ('CSV' in i[-3:].upper())  or 
+                                       ('FEATHER' in i[-7:].upper())  or 
+                                       ('PKL' in i[-3:].upper())  or 
+                                       ('ZPKL' in i[-4:].upper()) ]
             msg_count  = 0
-            
-            del dfx, dfc, files
-            filesToWorkOn = sorted(filesToWorkOn) 
+            filesToWorkOn = sorted(dfs) 
             for name in filesToWorkOn:
                 st.markdown(f'''<body><p style="font-size:20px;margin-bottom: -5px;">
                                 Analisando <b>{name}</b></p></body>''', unsafe_allow_html=True)
@@ -151,18 +157,24 @@ def run():
     <ul style="margin-bottom: -5px;">
       <li>mudança do licenciamento para CC BY 4.0 (jul/21).</li>
       <li>boxplot, customização de colunas, arquivo exemplo e amostragem (ago/21).</li>
-      <li>'tentativa automática de abrir o arquivo com engine Python e C(ago/21).</li>
+      <li>tentativa automática de abrir o arquivo com engine Python e C(ago/21).</li>
+      <li>formatos Feather e Pickle (em beta) (ago/21).</li>
     </ul></span><span style="font-size:16px ;line-height: 25px"><br>
    
     <p style="font-size:20px;margin-bottom: -5px;"><b><i>Issues</i> conhecidos</b></p>
     <p style="font-size:16px;margin-bottom: -5px;">
-    Neste momento o único "issue" conhecido é a questão do alinhamento dos resultados no browser, por um problema de fontes de HTML nos navegadores, particulamente referente aos "white spaces". <i>Se vc identificar um problema faça o reporte em  <a target="_blank" href ="http://www.github.com/fabianocastello/fca2web/issues">www.github.com/fabianocastello/fca2web/issues</a></i></p><br>
+    <ul style="margin-bottom: -5px;">
+    <li>alinhamento dos resultados no browser, por um problema de fontes de HTML nos navegadores, particulamente referente aos "white spaces".</li>
+    <li>formatos Feather e Pickle, dependendo da compressão usada no momento da gravação podem apresentar problemas para serem abertos no FCA2.</li>
+    <li><i>Se vc identificar um problema faça o reporte em  <a target="_blank" href ="http://www.github.com/fabianocastello/fca2web/issues">www.github.com/fabianocastello/fca2web/issues</a></i>.</li>
+    </ul></p><br>
     
     <p style="font-size:20px;margin-bottom: -5px;"><b>O que está no <i>pipeline</i></b></p>
     <p style="font-size:16px;margin-bottom: -5px<span style="font-size:10px ;margin-bottom: -5px;"> 
     <ul style="margin-bottom: -5px;">
       <li>gerar um arquivo em PDF com a análise consolidada.</li>
       <li>melhorar a formatação de saída dos resultados (em linha com o problema de formatação das "white spaces").</li>
+      <li>analisar campos "datetime" e binário.</li>
     </ul></span><span style="font-size:16px ;line-height: 25px"><br>
     
     <p style="font-size:20px;margin-bottom: -5px;"><b>Sobre LGPD, GRPR e confidencialidade de dados</b></p>
@@ -193,7 +205,7 @@ datatmp   = "./!data.tmp"   #arquivos temporários. Será limpo após o processa
 max_freq  = 10 #numeros de categorias máximas nos campos texto
 hist_bins = 10 #qte de bins no histograma 
 max_dups  =  5 #qte de exemplos de duplicados 
-sample    =  5 #qte de exemplos da coluna 
+sampleN    =  5 #qte de exemplos da coluna 
 
 FC_Auto_Analyser_Version = 'fca2web beta 0.93 (2021AGO07) '
 
@@ -263,7 +275,7 @@ def analysis(file):
         start_time = time.time()
 
         # open the file
-        if 'csv' in file:
+        if 'csv' in file.lower():
             decimalcsv = ',' if dec_csv else '.'
             try:
                 if len(sep_csv.strip()) == 0:
@@ -309,7 +321,7 @@ def analysis(file):
                 log_write("Abortando analise "+file)
                 log_write("Sugestão: verifique se o arquivos está codificado como UTF-8")
                 return(-1)
-        elif 'xls'in file:
+        elif 'xls' in file.lower():
             try:
                 if noheader:
                     df = pd.read_excel(datain+"/"+file, header=None)
@@ -322,8 +334,39 @@ def analysis(file):
                 log_write("Erro "+str(erro))
                 log_write("Abortando analise "+file+"\n")
                 return(-1)
+                
+        elif 'feather' in file.lower():
+            import lz4
+            try:
+                if noheader:
+                    log_write("Feather não tem a opção de carregar sem header")
+                df = pd.read_feather(datain+"/"+file)
+                
+            except Exception as erro:
+                log_write("Erro "+str(erro))
+                log_write("Abortando analise "+file+"\n")
+                return(-1)
+                
+        elif 'zpkl' in file.lower():
+            if noheader:
+                log_write("Gzip Pickle não tem a opção de carregar sem header")
+            import gzip, pickle, pickletools
+            with gzip.open(datain+"/"+file, 'rb') as f:
+                  df   = pickle.Unpickler(f).load()
+
+        elif 'pkl' in file.lower():     
+            try:
+                if noheader:
+                    log_write("Pickle não tem a opção de carregar sem header")
+                df = pd.read_pickle(datain+"/"+file)
+                
+            except Exception as erro:
+                log_write("Erro "+str(erro))
+                log_write("Abortando analise "+file+"\n")
+                return(-1)
+                
         else:
-            log_write("Erro identificando xls/csv")
+            log_write("Erro identificando arquivo")
             return(-1)
         if filecst:
             df = custom_df(df)
@@ -455,7 +498,9 @@ def custom_df(df):
     return(df)
         
 def analysis_df(df,file):
-        
+
+    if True: #try:
+    
         ## MORFOLOGIA
         reg_total = df.shape[0]
         log_write("### <b>Análise de Morfologia</b>", newline=True) 
@@ -502,6 +547,11 @@ def analysis_df(df,file):
         elif xqte > 1: 
             log_write(f'{xqte} colunas de outros tipos: [ {xext} ]' ) 
         
+        dtp = []
+        for c in df.columns:
+            dtp.append(str(df[c].dtype))
+        dtp = ';'.join(set(dtp))
+        log_write(f'dtypes detalhados: {dtp}.' ) 
         
         ## CAMPOS TEXTO
         log_write("### Análise das colunas tipo <b>TEXTO</b>", newline=True) 
@@ -541,10 +591,13 @@ def analysis_df(df,file):
                             log_write("       ["+'{:>12,.0f}'.format(value)+
                                              "] [ " +'{:>5,.1f}'.format(value/ctmp_total*100) +"%] ["  
                                                     +'{:>5,.1f}'.format(freq_acc*100) +"%] "  
-                                             +str(key), addcont=False)   
+                                             +str(key), addcont=False)
                                              
-                ctmpS = pd.DataFrame(df[~df[x].isnull()][x], columns=[x]).sample(sample)
-                log_write(f"Amostra aleatória dos dados ({sample:,} itens):", addcont=False, newline=True) 
+                base_dup = pd.DataFrame(
+                           df[~df[x].isnull()][x], columns=[x])
+                sampleN1 = sampleN if base_dup.shape[0] > sampleN else base_dup.shape[0]
+                ctmpS = base_dup.sample(sampleN1)
+                log_write(f"Amostra aleatória dos dados (max {sampleN1:,} itens):", addcont=False, newline=True) 
                 log_write(f"{'; '.join([str(c) for c in ctmpS[x].unique()])}", addcont=False) 
                                              
                 ctmpD = pd.DataFrame(df[~df[x].isnull()][x], columns=[x])
@@ -556,7 +609,7 @@ def analysis_df(df,file):
                     cont = 0
                     dupsTX = '['
                     for index, row in dupsTMP.iterrows():
-                        dupsTX += f'{str(row[x]).strip()}({row[0]}), '
+                        dupsTX += f'{str(row[x]).strip()}({row[0]:,}), '
                         cont += 1
                         if cont >= max_dups: break
                     dupsTX = dupsTX.strip()[:-1]+']'
@@ -567,12 +620,13 @@ def analysis_df(df,file):
         ## CAMPOS NUMÉRICOS (INTEIROS e DECIMAIS)
         log_write("### Análise das colunas <b>NUMÉRICAS</b> (INTEIROS E DECIMAIS)",newline=True) 
         for x in df.columns:
-            if df[x].dtype == np.int64 or df[x].dtype == np.float64:
+            #if df[x].dtype == np.int64 or df[x].dtype == np.float64:
+            if 'int'   in  str(df[x].dtype) or\
+               'float' in  str(df[x].dtype):
                 xqte += 1 
                 tipo = '[INTEIRO]' if df[x].dtype == np.int64 else '[DECIMAL]'
                 log_write(str(xqte)+") "+ x + " ["+x.upper()+f"] {tipo}",newline=True) 
     
-
                 if df[x].sum() == 0:   
                     log_write("  <b>Todos os valores zerados</b>") 
                 else:
@@ -584,7 +638,7 @@ def analysis_df(df,file):
                     ctmpZEXC = ctmp[ctmp == 0]
                     zerados = ctmpZEXC.shape[0]
                     z = True if zerados == 0 else False
-                    log_write(f"{'Registros:'  :<15}{reg_total :>10,}", addcont=False) 
+                    log_write(f"{'Registros:':<15}{reg_total :>10,}", addcont=False) 
                     log_write(f"{'Missing:'  :<15}{nulos :>10,}", addcont=False) 
                     log_write(f"{'Válidos:'  :<15}{reg_total-nulos :>10,}", addcont=False) 
                     log_write(f"{'Zerados:'  :<15}{zerados :>10,}", addcont=False) 
@@ -594,7 +648,7 @@ def analysis_df(df,file):
                     log_write(txt, addcont=False) 
                                          
                     txt = f'{"Registros:"  :<12}{reg_total-nulos:>30,}'+\
-                          f'{ctmpZ.shape[0] if not z else "":>46}' 
+                          f'{ctmpZ.shape[0] if not z else "":>46,}' 
                     log_write(txt, addcont=False) 
                                         
                     txt  = 'Soma: {:>30,}'.format(round(ctmp.sum() ,2))
@@ -636,8 +690,12 @@ def analysis_df(df,file):
                     txt +=       f'{round(ctmpZ.describe()[6],2):>40,}' if not z else ""
                     log_write(txt, addcont=False) 
                     
-                    ctmpS = pd.DataFrame(df[~df[x].isnull()][x], columns=[x]).sample(sample)
-                    log_write(f"Amostra aleatória dos dados ({sample:,} itens):", addcont=False, newline=True) 
+                    base_dup = pd.DataFrame(
+                           df[~df[x].isnull()][x], columns=[x])
+                    sampleN1 = sampleN if base_dup.shape[0] > sampleN else base_dup.shape[0]
+                    ctmpS = base_dup.sample(sampleN1)
+                    ctmpS = pd.DataFrame(df[~df[x].isnull()][x], columns=[x]).sample(sampleN1)
+                    log_write(f"Amostra aleatória dos dados (max {sampleN:,} itens):", addcont=False, newline=True) 
                     log_write(f"{'; '.join([str(c) for c in ctmpS[x].unique()])}", addcont=False) 
        
                     if hist:
@@ -664,7 +722,6 @@ def analysis_df(df,file):
 
                         image = Image.open(dataout+"/"+img_file)
                         st.image(image, caption=img_file) 
-						
 						
                     if boxp:
                         grf = df[x].dropna()    
@@ -713,8 +770,6 @@ def analysis_df(df,file):
                 st.image(image, caption=img_file)                        
             else:
                 log_write('Não foram identificadas variáveis numéricas')
-
-           
        
         running_time = str(int(round( (time.time() - start_time)/60,0)) )+'min'
        
@@ -722,9 +777,11 @@ def analysis_df(df,file):
         
         #post statísticas
         if not file == 'titanic.csv':
-            ret = post_stat_fca2(file, sizeKB, parâmetros, running_time, remarks)
+            ret = post_stat_fca2(file, sizeKB, parâmetros,
+                                 running_time, f" dtypes = {dtp}".strip())
             if '200' in str(ret):
-                log_write(f"Estatística postada: nome={file}, size={sizeKB:,}Kb, param={parâmetros}"+\
+                log_write(f"Estatística postada: nome={file}, size={sizeKB:,}Kb, "+\
+                          f"dtypes = {dtp}, param={parâmetros}"+\
                           f", Elap={running_time}, remarks={remarks}",
                             newline=False,addcont=True) 
         log_write("Análise finalizada de "+file, newline=False) 
@@ -733,9 +790,9 @@ def analysis_df(df,file):
             
         return(0)
 
-    #except Exception as erro:
-    #    log_write("\n\n Erro Geral: "+str(erro) + "\n\n") 
-    #    return(-2)
+    # except Exception as erro:
+       # log_write("\n\n Erro Geral: "+str(erro) + "\n\n") 
+       # return(-2)
        
 def tool_tips(widget):
     if    widget == 'max_freq':
@@ -759,14 +816,14 @@ def tool_tips(widget):
     elif widget == 'dec_csv':
         return("""FCA2 utiliza como base para os números decimais o ponto, mas existem casos onde o decimal é uma vírgula. Note que se o separador e o parâmetro de decimal forem iguais o FCA2 realizará a análise, mas dará um alerta para verificar.""")
     elif widget == 'uploaded_file':
-        return("""Arraste o arquivo para ser analisado ou selecione a partir botão "browser". FCA2 aceita arquivos formato CSV e Excel. Se vc tem um arquivo CSV com extensão TXT ou outra, renomeie para que o arquivo seja analisado. A opção de multiplos arquivos foi descontinuada para implantação da customização dos tipos de colunas.""")
+        return("""Arraste o arquivo para ser analisado ou selecione a partir botão "browser". Veja as observações com considerações sobre o tipo dos arquivos. A opção de multiplos arquivos foi descontinuada para implantação da customização dos tipos de colunas.""")
     elif widget == 'titanic':
         return("""A base titanic é muito utilizada como exemplo porque é um arquivo pequeno, tem colunas de vários tipos, casos de duplicações e dados ausentes.""")
 
     return('no tool tip!')
 
     # global msg_count, max_freq, hist_bins, max_dups
-    # global hist, boxp, mcorr, noheader, sep_csv, filecst, dec_csv, sample
+    # global hist, boxp, mcorr, noheader, sep_csv, filecst, dec_csv, sampleN
     # global UserAgents, runningOn, parâmetros, remarks, sizeKB
 
 
