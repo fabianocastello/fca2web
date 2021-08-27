@@ -31,6 +31,7 @@ if not runningOn == 'localhost':
     config_parser.read('./fca2web.ini')
     url_post_stat  = config_parser.get('RUN', 'url_post_stat')
 else:
+    import pickle5 as pickle
     url_post_stat = st.secrets["url_post_stat"]
 
 caching.clear_cache()
