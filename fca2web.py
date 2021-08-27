@@ -26,12 +26,14 @@ with open("./UserAgents.cfg",encoding='utf-8') as f:
 UserAgents = [c.replace('\n','').strip() for c in UserAgents]
 
 if not runningOn == 'localhost':
+    import gzip, pickle, pickletools
     import configparser
     config_parser = configparser.RawConfigParser()
     config_parser.read('./fca2web.ini')
     url_post_stat  = config_parser.get('RUN', 'url_post_stat')
 else:
     import pickle5 as pickle
+    import gzip, pickletools
     url_post_stat = st.secrets["url_post_stat"]
 
 caching.clear_cache()
@@ -352,7 +354,6 @@ def analysis(file):
         elif 'zpkl' in file.lower():
             if noheader:
                 log_write("Gzip Pickle não tem a opção de carregar sem header")
-            import gzip, pickle, pickletools
             with gzip.open(datain+"/"+file, 'rb') as f:
                   df   = pickle.Unpickler(f).load()
 
