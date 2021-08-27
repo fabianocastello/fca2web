@@ -90,7 +90,8 @@ def run():
     titanic =  st.checkbox('Marque para ver uma demonstração (titanic.csv)', value=False,
     help=tool_tips('titanic'))
     
-    with st.beta_expander("Considerações sobre formatos de arquivos"):
+    #with st.beta_expander("Considerações sobre formatos de arquivos"):
+    with st.expander("Considerações sobre formatos de arquivos"):
            st.write("""
                FCA2 aceita arquivos formato CSV, Excel, Feather, Pickle e Pickle compactado (gzip). Se vc tem um arquivo CSV com extensão TXT ou outra, renomeie para que o arquivo seja analisado. O limite para análise é de 500Mb, porém para arquivos com mais de 50Mb o processamento será lento e, rodando localmente, todos os recursos serão consumidos a ponto de você achar que sua máquina travou. """)
            st.write("""
