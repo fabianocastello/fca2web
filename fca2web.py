@@ -16,7 +16,6 @@ from PIL import Image
 from random import randrange
 import streamlit as st
 from streamlit import caching
-import gzip, pickle, pickletools
 
 #global UserAgents, runningOn, parâmetros, remarks, sizeKB
 runningOn =  socket.gethostname()
@@ -350,22 +349,24 @@ def analysis(file):
                 return(-1)
                 
         elif 'zpkl' in file.lower():
+            import gzip, pickle, pickletools
             if noheader:
                 log_write("Gzip Pickle não tem a opção de carregar sem header")
-            try:
-                with gzip.open(datain+"/"+file, 'rb') as f:
-                  df   = pickle.Unpickler(f).load()
-            except:                  
-                  import pickle5 as pickle
-                  with open(datain+"/"+file, "rb") as fh:
-                      df = pickle.load(fh)
+            with gzip.open(datain+"/"+file, 'rb') as f:
+              df = pickle.Unpickler(f).load()
 
 
         elif 'pkl' in file.lower():     
             try:
+                import gzip, pickle, pickletools
                 if noheader:
                     log_write("Pickle não tem a opção de carregar sem header")
-                df = pd.read_pickle(datain+"/"+file)
+                try:
+                    df = pd.read_pickle(datain+"/"+file)
+                except:                  
+                    import pickle5 as pickle
+                    with open(datain+"/"+file, "rb") as fh:
+                          df = pickle.load(fh)
                 
             except Exception as erro:
                 log_write("Erro "+str(erro))
