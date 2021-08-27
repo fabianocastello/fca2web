@@ -90,7 +90,7 @@ def run():
     titanic =  st.checkbox('Marque para ver uma demonstração (titanic.csv)', value=False,
     help=tool_tips('titanic'))
     
-    with st.expander("Considerações sobre formatos de arquivos"):
+    with st.beta_expander("Considerações sobre formatos de arquivos"):
            st.write("""
                FCA2 aceita arquivos formato CSV, Excel, Feather, Pickle e Pickle compactado (gzip). Se vc tem um arquivo CSV com extensão TXT ou outra, renomeie para que o arquivo seja analisado. O limite para análise é de 500Mb, porém para arquivos com mais de 50Mb o processamento será lento e, rodando localmente, todos os recursos serão consumidos a ponto de você achar que sua máquina travou. """)
            st.write("""
@@ -183,7 +183,7 @@ def run():
 
     <p style="font-size:20px;margin-bottom: -5px;"><b>Contribuições</b></p>
     <p style="font-size:16px;margin-bottom: -5px;">
-    FCA2 é mantido pelo autor com contribuições da comunidade.<br>Thanks: Marcus Pinto, João Victor Mulle, Mateus Ricci, Vivian Sato. <i>Para contribuir com o projeto faça um "fork" a partir do repositório <a target="_blank" href ="http://www.github.com/fabianocastello/fca2web">www.github.com/fabianocastello/fca2web</a></i>.</p><br>
+    FCA2 é mantido pelo autor com contribuições da comunidade.<br>Thanks: Marcus Pinto, João Victor Mulle, Mateus Ricci, Vivian Sato.<br><i>Para contribuir com o código do projeto faça um "fork" a partir do repositório <a target="_blank" href ="http://www.github.com/fabianocastello/fca2web">www.github.com/fabianocastello/fca2web</a>. Para sugerir melhorias, mesmo sem ter a menor noção de como fazer isso na linguagem Python, envie um email para <a href ="mailto:fca2@fabianocastello.com.br?Subject:Contribuição_FCA2">fca2@fabianocastello.com.br</a></i>.</p><br>
     
     <p style="font-size:20px;margin-bottom: -5px;"><b>FCA2 na sua organização</b></p>
     <p style="font-size:16px;margin-bottom: -5px;">
@@ -648,7 +648,7 @@ def analysis_df(df,file):
                     log_write(txt, addcont=False) 
                                          
                     txt = f'{"Registros:"  :<12}{reg_total-nulos:>30,}'+\
-                          f'{ctmpZ.shape[0] if not z else "":>46,}' 
+                          f'{ctmpZ.shape[0] if not z else "":>46}' 
                     log_write(txt, addcont=False) 
                                         
                     txt  = 'Soma: {:>30,}'.format(round(ctmp.sum() ,2))
