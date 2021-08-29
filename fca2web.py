@@ -16,6 +16,7 @@ from PIL import Image
 from random import randrange
 import streamlit as st
 from streamlit import caching
+import base64
 
 #global UserAgents, runningOn, parâmetros, remarks, sizeKB
 runningOn =  socket.gethostname()
@@ -132,12 +133,11 @@ def run():
                              f'hist={hist}; boxp={boxp}; mcorr={mcorr}; noheader={noheader}; '
                 remarks = ''
                 sizeKB     = int(round(os.stat(datain+"/"+name).st_size/1024,0))
-                                
-                analysis(name)
                 
+                global output
+                output = pd.DataFrame(columns=['TS','Row','Content','NewLine'])
+                analysis(name)
 
-            st.markdown(f'''<body><p style="font-size:15px;margin-bottom: -5px;"><br><br><br>
-                                <u>✅ <i>Para analisar outro arquivo pressione F5</i></u></p></body>''', unsafe_allow_html=True)
     
     st.markdown('''
     <body>
@@ -157,15 +157,16 @@ def run():
     <p style="font-size:16px;margin-bottom: -5px<span style="font-size:10px ;margin-bottom: -5px;"> 
     <ul style="margin-bottom: -5px;">
       <li>mudança do licenciamento para CC BY 4.0 (jul/21).</li>
-      <li>boxplot, customização de colunas, arquivo exemplo e amostragem (ago/21).</li>
-      <li>tentativa automática de abrir o arquivo com engine Python e C(ago/21).</li>
+      <li>boxplot, customização de colunas, amostragem e exemplos de duplicados (ago/21).</li>
+      <li>tentativa automática de abrir arquivo CSV com engine Python e C (ago/21).</li>
       <li>formatos Feather e Pickle (em beta) (ago/21).</li>
+      <li>download do relatório da análise em TXT.</li>
+      <li>melhorias na formatação do relatório.</li>
     </ul></span><span style="font-size:16px ;line-height: 25px"><br>
    
     <p style="font-size:20px;margin-bottom: -5px;"><b><i>Issues</i> conhecidos</b></p>
     <p style="font-size:16px;margin-bottom: -5px;">
     <ul style="margin-bottom: -5px;">
-    <li>alinhamento dos resultados no browser, por um problema de fontes de HTML nos navegadores, particulamente referente aos "white spaces".</li>
     <li>formatos Feather e Pickle, dependendo da compressão usada no momento da gravação podem apresentar problemas para serem abertos no FCA2.</li>
     <li><i>Se vc identificar um problema faça o reporte em  <a target="_blank" href ="http://www.github.com/fabianocastello/fca2web/issues">www.github.com/fabianocastello/fca2web/issues</a></i>.</li>
     </ul></p><br>
@@ -173,9 +174,10 @@ def run():
     <p style="font-size:20px;margin-bottom: -5px;"><b>O que está no <i>pipeline</i></b></p>
     <p style="font-size:16px;margin-bottom: -5px<span style="font-size:10px ;margin-bottom: -5px;"> 
     <ul style="margin-bottom: -5px;">
-      <li>gerar um arquivo em PDF com a análise consolidada.</li>
-      <li>melhorar a formatação de saída dos resultados (em linha com o problema de formatação das "white spaces").</li>
+      <li>gerar um arquivo em PDF com a análise consolidada, incluindo os gráficos.</li>
+      <li>gerar gráficos com informações relevantes, usando seaborn.</li>
       <li>analisar campos "datetime" e binário.</li>
+      <li>postar estatísticas da utilização.</li>
     </ul></span><span style="font-size:16px ;line-height: 25px"><br>
     
     <p style="font-size:20px;margin-bottom: -5px;"><b>Sobre LGPD, GRPR e confidencialidade de dados</b></p>
@@ -208,7 +210,7 @@ hist_bins = 10 #qte de bins no histograma
 max_dups  =  5 #qte de exemplos de duplicados 
 sampleN    =  5 #qte de exemplos da coluna 
 
-FC_Auto_Analyser_Version = 'fca2web beta 0.93 (2021AGO07) '
+FC_Auto_Analyser_Version = 'fca2web beta 0.95 (2021AGO28) '
 
 #Criando diretórios se inexistentes
 dirs = ['!data.tmp','!data.out','!data.log','!data.in']
@@ -240,18 +242,30 @@ def msgC():
     return(str(msg_count).zfill(4))
 
 def log_write(msg, newline=False, addcont=True):
+    global output
     ident = '&nbsp;'*5
     if newline:
         st.markdown(f'''<body><p style="font-size:14px;margin-bottom: -5px;
                     font-family: monospace;"><br></p></body>''', unsafe_allow_html=True)
-    msg = msg.replace('  ',' ')
+    #msg = msg.replace('  ',' ')
     cut = 100
+    msgCstr = msgC() if addcont else None
     if addcont:
-        full_msg  = (f'{msgC()} {msg}').strip()
+        full_msg  = (f'{msgCstr} {msg}').strip()
     else:
         full_msg  = (f'{ident+msg}').strip()
+        
+    output = output.append({
+                   'TS'      : datetime.today(),
+                   'Row'     : msgCstr,
+                   'Content' : msg,
+                   'NewLine' : newline,
+                   
+                   },ignore_index=True)
     first_msg = full_msg[:cut].replace(' ', '&nbsp;').replace('\n', '<br>')
+    first_msg = first_msg.replace('<', '&#60;').replace('>', '&#62;')
     rest_msg  = full_msg[cut:].replace(' ', '&nbsp;').replace('\n', '<br>')
+    rest_msg  = rest_msg.replace('<', '&#60;').replace('>', '&#62;')
     st.markdown(f'''<body><p style="font-size:14px;margin-bottom: -5px;
                     font-family: monospace">
                     {first_msg}</p></body>''', unsafe_allow_html=True)
@@ -575,38 +589,38 @@ def analysis_df(df,file):
                 validos = ctmp_total-nulos
                 
                 
-                log_write(f"{'registros:':<15}{ctmp_total   :>10,}", addcont=False) 
-                log_write(f"{'missing:'  :<15}{nulos        :>10,}", addcont=False) 
-                log_write(f"{'válidos:'  :<15}{validos      :>10,}", addcont=False) 
-                
                 ctmp.drop_duplicates(keep='first', inplace = True) 
                 ctmp_final = ctmp.shape[0]
                 dups       = ctmp_total-nulos-ctmp_final 
                 
-                log_write(f"{'duplicados:'  :<15}{dups :>10,}", addcont=False) 
-                log_write(f"{'categorias:'  :<15}{ctmp_final :>10,}", addcont=False) 
-                
+                log_write(f"{'registros:  ':<15}{ctmp_total :>10}", addcont=False,newline=True) 
+                log_write(f"{'missing:    ':<15}{nulos      :>10}", addcont=False) 
+                log_write(f"{'válidos:    ':<15}{validos    :>10}", addcont=False) 
+                log_write(f"{'duplicados: ':<15}{dups       :>10}", addcont=False) 
+                log_write(f"{'categorias: ':<15}{ctmp_final :>10}", addcont=False) 
                 if (ctmp_total-ctmp_final) == 0:
                     log_write(f"categorias = registros, zero duplicados", addcont=False) 
                 else:
-                    log_write("Freqs  [f.abs] [ f.rel%] [f.acc%] categorias (max="+'{:n})'.format(max_freq), addcont=False)
+                    log_write("[       f.abs] [f.rel%] [f.acc%] categorias (max="+'{:n})'.format(max_freq), addcont=False)
                     freq     = 0
                     freq_acc = 0
                     for key, value in ctmp_counts.iteritems():
+                        key2show = str(key) if len(str(key))<= 35 else str(key)[:35]+'\\' 
                         if freq <= max_freq:
                             freq += 1
                             freq_acc = freq_acc + (value/ctmp_total)
-                            log_write("       ["+'{:>12,.0f}'.format(value)+
-                                             "] [ " +'{:>5,.1f}'.format(value/ctmp_total*100) +"%] ["  
-                                                    +'{:>5,.1f}'.format(freq_acc*100) +"%] "  
-                                             +str(key), addcont=False)
+                            log_write(
+                                    "["    +'{:>12,.0f}'.format(value)+
+                                    "] ["  +'{:>5,.1f}'.format(value/ctmp_total*100)+
+                                    "%] [" +'{:>5,.1f}'.format(freq_acc*100) +"%] "  
+                                           +key2show, addcont=False)
                                              
                 base_dup = pd.DataFrame(
                            df[~df[x].isnull()][x], columns=[x])
                 sampleN1 = sampleN if base_dup.shape[0] > sampleN else base_dup.shape[0]
                 ctmpS = base_dup.sample(sampleN1)
                 log_write(f"Amostra aleatória dos dados (max {sampleN1:,} itens):", addcont=False, newline=True) 
-                log_write(f"{'; '.join([str(c) for c in ctmpS[x].unique()])}", addcont=False) 
+                log_write(f"[{']['.join([str(c) for c in ctmpS[x].unique()])}]", addcont=False) 
                                              
                 ctmpD = pd.DataFrame(df[~df[x].isnull()][x], columns=[x])
                 if not dups == 0:
@@ -617,10 +631,10 @@ def analysis_df(df,file):
                     cont = 0
                     dupsTX = '['
                     for index, row in dupsTMP.iterrows():
-                        dupsTX += f'{str(row[x]).strip()}({row[0]:,}), '
+                        dupsTX += f'{str(row[x]).strip()}({row[0]:,})]['
                         cont += 1
                         if cont >= max_dups: break
-                    dupsTX = dupsTX.strip()[:-1]+']'
+                    dupsTX = dupsTX.strip()[:-1]
                     log_write(f"Duplicações ({cont:,} exemplos):", addcont=False, newline=True) 
                     log_write(f"{dupsTX}", addcont=False) 
 
@@ -646,56 +660,84 @@ def analysis_df(df,file):
                     ctmpZEXC = ctmp[ctmp == 0]
                     zerados = ctmpZEXC.shape[0]
                     z = True if zerados == 0 else False
-                    log_write(f"{'Registros:':<15}{reg_total :>10,}", addcont=False) 
-                    log_write(f"{'Missing:'  :<15}{nulos :>10,}", addcont=False) 
-                    log_write(f"{'Válidos:'  :<15}{reg_total-nulos :>10,}", addcont=False) 
-                    log_write(f"{'Zerados:'  :<15}{zerados :>10,}", addcont=False) 
+                    log_write(f"{'registros:':<15}{reg_total :>10,}", addcont=False,newline=True) 
+                    log_write(f"{'missing:'  :<15}{nulos :>10,}", addcont=False) 
+                    log_write(f"{'válidos:'  :<15}{reg_total-nulos :>10,}", addcont=False) 
+                    log_write(f"{'zerados:'  :<15}{zerados :>10,}", addcont=False) 
 
-
-                    txt = f'{"[Válidos]":>46}{"[Válidos Exc. Zero]" if not z else "":>31}'
-                    log_write(txt, addcont=False) 
+                    txt = f'{"[válidos]":>30}{"  [válidos exc. zero]" if not z else "":>20}'.rstrip()
+                    log_write(txt, addcont=False,newline=True) 
                                          
-                    txt = f'{"Registros:"  :<12}{reg_total-nulos:>30,}'+\
-                          f'{ctmpZ.shape[0] if not z else "":>46}' 
-                    log_write(txt, addcont=False) 
-                                        
-                    txt  = 'Soma: {:>30,}'.format(round(ctmp.sum() ,2))
-                    txt +=       '{:>35,}'.format(round(ctmpZ.sum(),2)) if not z else ''
+                    txt  =  'registros:'.ljust(15)
+                    txt +=  ' {:>10,}   '.format(reg_total-nulos)
+                    txt +=  ' {:>17,}   '.format(ctmpZ.shape[0]) if not z else ''
                     log_write(txt, addcont=False) 
                     
-                    txt  = 'Média: {:>30,}'.format(round(ctmp.describe()[1],2))
-                    txt +=       '{:>35,}'.format(round(ctmpZ.describe()[1],2)) if not z else ''
+                    txt  =  'soma:'.ljust(15)
+                    txt +=  ' {:>13,.2f}'.format(round(ctmp.sum() ,2))
+                    txt +=  ' {:>20,.2f}'.format(round(ctmpZ.sum(),2)) if not z else ''
                     log_write(txt, addcont=False) 
                     
-                    txt  = 'Desvio: {:>30,}'.format(round(ctmp.describe()[2],2))
-                    txt +=       '{:>35,}'.format(round(ctmpZ.describe()[2],2)) if not z else ''
+                    txt  =  'média:'.ljust(15)
+                    txt +=  ' {:>13,.2f}'.format(round(ctmp.describe()[1],2))
+                    txt +=  ' {:>20,.2f}'.format(round(ctmpZ.describe()[1],2)) if not z else ''
                     log_write(txt, addcont=False) 
                     
+                    txt  =  'desvio:'.ljust(15)
+                    txt +=  ' {:>13,.2f}'.format(round(ctmp.describe()[2],2))
+                    txt +=  ' {:>20,.2f}'.format(round(ctmpZ.describe()[2],2)) if not z else ''
+                    log_write(txt, addcont=False) 
                     
+                    txt  =  'médiana (Q2):'.ljust(15)
+                    txt +=  ' {:>13,.2f}'.format(round(ctmp.median(),2))
+                    txt +=  ' {:>20,.2f}'.format(round(ctmpZ.median(),2)) if not z else ''
+                    
+                    log_write(txt, addcont=False) 
+                    txt  =  'mínimo:'.ljust(15)
+                    txt +=  ' {:>13,.2f}'.format(round(ctmp.describe()[3],2))
+                    txt +=  ' {:>20,.2f}'.format(round(ctmpZ.describe()[3],2)) if not z else ''
+                    log_write(txt, addcont=False) 
                    
-                    txt = f'{"Mínimo:"  :<12}{round(ctmp.describe()[3],2):>24,}'
-                    txt +=       f'{round(ctmpZ.describe()[3],2):>40,}' if not z else "" 
-                    log_write(txt, addcont=False)  
- 
-                   
-                    txt = f'{"Máximo:"  :<12}{round(ctmp.describe()[7],2):>24,}'
-                    txt +=       f'{round(ctmpZ.describe()[7],2):>40,}' if not z else ""
+                    txt  =  'máximo:'.ljust(15)
+                    txt +=  ' {:>13,.2f}'.format(round(ctmp.describe()[7],2))
+                    txt +=  ' {:>20,.2f}'.format(round(ctmpZ.describe()[7],2)) if not z else ''
                     log_write(txt, addcont=False) 
  
-                    txt = f'{"Amplitude:"  :<12}{round(ctmp.describe()[7]-ctmp.describe()[3],2):>24,}'
-                    txt +=       f'{round(ctmpZ.describe()[7]-ctmpZ.describe()[6],2):>40,}' if not z else ""
+                    txt  =  'amplitude:'.ljust(15)
+                    txt +=  ' {:>13,.2f}'.format(round(ctmp.describe()[7]-ctmp.describe()[3],2))
+                    txt +=  ' {:>20,.2f}'.format(round(ctmpZ.describe()[7]-ctmpZ.describe()[3],2)) if not z else ''
                     log_write(txt, addcont=False) 
  
-                    txt = f'{"25%:"  :<12}{round(ctmp.describe()[4],2):>24,}'
-                    txt +=       f'{round(ctmpZ.describe()[4],2):>40,}' if not z else ""
+                    txt  =  '25% (Q1):'.ljust(15)
+                    txt +=  ' {:>13,.2f}'.format(round(ctmp.describe()[4],2))
+                    txt +=  ' {:>20,.2f}'.format(round(ctmpZ.describe()[4],2)) if not z else ''
                     log_write(txt, addcont=False) 
- 
-                    txt = f'{"Mediana:"  :<12}{round(ctmp.describe()[5],2):>24,}'
-                    txt +=       f'{round(ctmpZ.describe()[5],2):>40,}' if not z else ""
+
+                    txt  =  '50% (Q2):'.ljust(15)
+                    txt +=  ' {:>13,.2f}'.format(round(ctmp.describe()[5],2))
+                    txt +=  ' {:>20,.2f}'.format(round(ctmpZ.describe()[5],2)) if not z else ''
                     log_write(txt, addcont=False) 
- 
-                    txt = f'{"75%:"  :<12}{round(ctmp.describe()[6],2):>24,}'
-                    txt +=       f'{round(ctmpZ.describe()[6],2):>40,}' if not z else ""
+                    
+                    txt  =  '75% (Q3):'.ljust(15)
+                    txt +=  ' {:>13,.2f}'.format(round(ctmp.describe()[6],2))
+                    txt +=  ' {:>20,.2f}'.format(round(ctmpZ.describe()[6],2)) if not z else ''
+                    log_write(txt, addcont=False) 
+                    ############################### QTE RECORDS
+                    txt  =  'registros<Q1:'.ljust(15)
+                    txt +=  ' {:>10,}'.format((ctmp < ctmp.describe()[4]).sum())
+                    txt +=  ' {:>20,}'.format((ctmp < ctmpZ.describe()[4]).sum()) if not z else ''
+                    log_write(txt, addcont=False) 
+                    txt  =  'registros<Q2:'.ljust(15)
+                    txt +=  ' {:>10,}'.format((ctmp < ctmp.describe()[5]).sum())
+                    txt +=  ' {:>20,}'.format((ctmp < ctmpZ.describe()[5]).sum()) if not z else ''
+                    log_write(txt, addcont=False) 
+                    txt  =  'registros>Q2:'.ljust(15)
+                    txt +=  ' {:>10,}'.format((ctmp > ctmp.describe()[5]).sum())
+                    txt +=  ' {:>20,}'.format((ctmp > ctmpZ.describe()[5]).sum()) if not z else ''
+                    log_write(txt, addcont=False) 
+                    txt  =  'registros>Q3:'.ljust(15)
+                    txt +=  ' {:>10,}'.format((ctmp > ctmp.describe()[6]).sum())
+                    txt +=  ' {:>20,}'.format((ctmp > ctmpZ.describe()[6]).sum()) if not z else ''
                     log_write(txt, addcont=False) 
                     
                     base_dup = pd.DataFrame(
@@ -704,7 +746,7 @@ def analysis_df(df,file):
                     ctmpS = base_dup.sample(sampleN1)
                     ctmpS = pd.DataFrame(df[~df[x].isnull()][x], columns=[x]).sample(sampleN1)
                     log_write(f"Amostra aleatória dos dados (max {sampleN:,} itens):", addcont=False, newline=True) 
-                    log_write(f"{'; '.join([str(c) for c in ctmpS[x].unique()])}", addcont=False) 
+                    log_write(f"[{']['.join([str(c) for c in ctmpS[x].unique()])}]", addcont=False) 
        
                     if hist:
                         grf = df[x].dropna()    
@@ -717,7 +759,7 @@ def analysis_df(df,file):
                         plt.ylim(0, max_height*1.1)
                         
                         plt.text(0.03*max_lenght,-0.09*max_height,
-                                 FC_Auto_Analyser_Version+'\n'+'http://github.com/fabianocastello/fca2web',
+                                 FC_Auto_Analyser_Version+'\n'+'https://www.fabianocastello.com.br/fca2',
                                  fontsize=10, ha='left')
                         
                         sns_plot = sns.distplot(grf, bins=hist_bins, kde=False, color="purple", 
@@ -743,7 +785,7 @@ def analysis_df(df,file):
                         plt.ylim(0, max_height*1.1)
                         
                         plt.text(0.03*max_lenght,-0.09*max_height,
-                                 FC_Auto_Analyser_Version+'\n'+'http://github.com/fabianocastello/fca2web',
+                                 FC_Auto_Analyser_Version+'\n'+'https://www.fabianocastello.com.br/fca2',
                                  fontsize=10, ha='left')
                         
                         sns_plot = sns.boxplot(x=grf)
@@ -793,6 +835,19 @@ def analysis_df(df,file):
                           f", Elap={running_time}, remarks={remarks}",
                             newline=False,addcont=True) 
         log_write("Análise finalizada de "+file, newline=False) 
+        
+        dump_output(output)
+        with open('./!data.out/Report.txt', 'r', encoding = 'utf-8') as f:
+            txt = f.read()
+        download_filename = f'{datetime.today().strftime("%Y-%m-%d_%Hh%Mm")}_FCA2_{file}.txt'
+        csv = txt
+        b64 = base64.b64encode(txt.encode()).decode()  # some strings <-> bytes conversions necessary here
+        #href = f'<a href="data:file/txt;base64,{b64}" download="myfilename.txt">Download CSV File</a> (right-click and save as &lt;some_name&gt;.csv)'
+        href = f'<a href="data:file/txt;base64,{b64}" download="{download_filename}"><br>Clique para baixar {download_filename}<br></a>'
+        st.markdown(href, unsafe_allow_html=True)
+
+        
+        
 
         st.success('Análise finalizada')
             
@@ -833,6 +888,24 @@ def tool_tips(widget):
     # global msg_count, max_freq, hist_bins, max_dups
     # global hist, boxp, mcorr, noheader, sep_csv, filecst, dec_csv, sampleN
     # global UserAgents, runningOn, parâmetros, remarks, sizeKB
+
+def dump_output(output):
+    with open('./!data.out/Report.txt', 'w', encoding = 'utf-8') as fout:
+        col = 70
+        fout.write(f"{FC_Auto_Analyser_Version}\nhttps://www.fabianocastello.com.br/fca2\n")
+        fout.write(f"Análise exploratória de dados gratuita, segura e colaborativa. Compartilhe!\n{'-'*col}\n")
+        for index, row in output.iterrows():
+            if row['NewLine']: fout.write('\n')
+            first_line = True
+            x = row['Content'].replace('<b>','').replace('</b>','')
+            chunks, chunk_size = len(x), col
+            line = ' '*4 if str(row['Row']) == 'nan' else\
+                   ' '*4 if str(row['Row']) == 'None' else row['Row']
+            for i in range(0, chunks, chunk_size):
+                chunk = x[i:i+chunk_size]+('' if i+col>chunks else '\\')
+                fout.write(f"""{line if first_line else ' '*4} {chunk}\n""")
+                first_line = False
+    return
 
 
 run()
