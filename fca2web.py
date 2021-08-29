@@ -91,10 +91,9 @@ def run():
     titanic =  st.checkbox('Marque para ver uma demonstração (titanic.csv)', value=False,
     help=tool_tips('titanic'))
     
-    #with st.beta_expander("Considerações sobre formatos de arquivos"):
     with st.expander("Considerações sobre formatos de arquivos"):
            st.write("""
-               FCA2 aceita arquivos formato CSV, Excel, Feather, Pickle e Pickle compactado (gzip). Se vc tem um arquivo CSV com extensão TXT ou outra, renomeie para que o arquivo seja analisado. O limite para análise é de 300Mb, porém para arquivos com mais de 50Mb o processamento será lento e, rodando localmente, todos os recursos serão consumidos a ponto de você achar que sua máquina travou. """)
+               FCA2 aceita arquivos formato CSV, Excel, Feather, Pickle e Pickle compactado (gzip). Se vc tem um arquivo CSV com extensão TXT ou outra, renomeie para que o arquivo seja analisado. O limite para análise é de 200Mb. Localmente é possível rodar arquivos até 1Gb, porém arquivos com mais de 200Mb o processamento é lento e todos os recursos são consumidos, a ponto de você achar que sua máquina travou. """)
            st.write("""
                **Em termos técnicos**, arquivos XLS muitas vezes são problemátivos, sempre que possível use XLSX; nos casos de arquivos CSV com problema de tokenização o FCA2 automaticamente tenta carregar usando o engine Python e, no caso de falha, o engine C++; Pickle funciona com protocolos 1 a 4, compactados com gzip ou não. Feather "vanilla" roda bem, mas dependendo da versão de pyarrow instalada não há suporte para lz4 e snappy.""")
         
@@ -602,11 +601,11 @@ def analysis_df(df,file):
                 ctmp_final = ctmp.shape[0]
                 dups       = ctmp_total-nulos-ctmp_final 
                 
-                log_write(f"{'registros:  ':<15}{ctmp_total :>10}", addcont=False,newline=True) 
-                log_write(f"{'missing:    ':<15}{nulos      :>10}", addcont=False) 
-                log_write(f"{'válidos:    ':<15}{validos    :>10}", addcont=False) 
-                log_write(f"{'duplicados: ':<15}{dups       :>10}", addcont=False) 
-                log_write(f"{'categorias: ':<15}{ctmp_final :>10}", addcont=False) 
+                log_write(f"{'registros:  ':<15}{ctmp_total :>10,}", addcont=False,newline=True) 
+                log_write(f"{'missing:    ':<15}{nulos      :>10,}", addcont=False) 
+                log_write(f"{'válidos:    ':<15}{validos    :>10,}", addcont=False) 
+                log_write(f"{'duplicados: ':<15}{dups       :>10,}", addcont=False) 
+                log_write(f"{'categorias: ':<15}{ctmp_final :>10,}", addcont=False) 
                 if (ctmp_total-ctmp_final) == 0:
                     log_write(f"categorias = registros, zero duplicados", addcont=False,newline=True)  
                 else:
