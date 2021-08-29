@@ -98,7 +98,7 @@ def run():
            st.write("""
                **Em termos técnicos**, arquivos XLS muitas vezes são problemátivos, sempre que possível use XLSX; nos casos de arquivos CSV com problema de tokenização o FCA2 automaticamente tenta carregar usando o engine Python e, no caso de falha, o engine C++; Pickle funciona com protocolos 1 a 4, compactados com gzip ou não. Feather "vanilla" roda bem, mas dependendo da versão de pyarrow instalada não há suporte para lz4 e snappy.""")
         
-    uploaded_file = st.file_uploader('Informe o arquivo para análise. Acesse a barra lateral (">" à esquerda) para opções.', type =['csv','xls','xlsx','feather','pkl','zpkl'],
+    uploaded_file = st.file_uploader('Informe o arquivo para análise. Acesse a barra lateral (">" à esquerda) para opções. O link para baixar o relatório em formato TXT está no final da análise.', type =['csv','xls','xlsx','feather','pkl','zpkl'],
                     accept_multiple_files=False, help=tool_tips('uploaded_file'))
     # UploadedFile(id=8, name='xxxxjr5mqz0i.csv', type='application/vnd.ms-excel', size=1211)
     
@@ -262,10 +262,19 @@ def log_write(msg, newline=False, addcont=True):
                    'NewLine' : newline,
                    
                    },ignore_index=True)
+                   
+                   
     first_msg = full_msg[:cut].replace(' ', '&nbsp;').replace('\n', '<br>')
+    first_msg = first_msg.replace('<b>', '83e7b7bc412f20').replace('</b>', '8xe7b7bc412f20B')
     first_msg = first_msg.replace('<', '&#60;').replace('>', '&#62;')
+    first_msg = first_msg.replace('83e7b7bc412f20', '<b>').replace('8xe7b7bc412f20B','</b>')
+    
     rest_msg  = full_msg[cut:].replace(' ', '&nbsp;').replace('\n', '<br>')
+    rest_msg  = rest_msg.replace('<b>', '83e7b7bc412f20').replace('</b>', '8xe7b7bc412f20B')
     rest_msg  = rest_msg.replace('<', '&#60;').replace('>', '&#62;')
+    rest_msg  = rest_msg.replace('83e7b7bc412f20', '<b>').replace('8xe7b7bc412f20B','</b>')
+
+
     st.markdown(f'''<body><p style="font-size:14px;margin-bottom: -5px;
                     font-family: monospace">
                     {first_msg}</p></body>''', unsafe_allow_html=True)
@@ -599,9 +608,9 @@ def analysis_df(df,file):
                 log_write(f"{'duplicados: ':<15}{dups       :>10}", addcont=False) 
                 log_write(f"{'categorias: ':<15}{ctmp_final :>10}", addcont=False) 
                 if (ctmp_total-ctmp_final) == 0:
-                    log_write(f"categorias = registros, zero duplicados", addcont=False) 
+                    log_write(f"categorias = registros, zero duplicados", addcont=False,newline=True)  
                 else:
-                    log_write("[       f.abs] [f.rel%] [f.acc%] categorias (max="+'{:n})'.format(max_freq), addcont=False)
+                    log_write("[       f.abs] [f.rel%] [f.acc%] categorias (max="+'{:n})'.format(max_freq), addcont=False,newline=True) 
                     freq     = 0
                     freq_acc = 0
                     for key, value in ctmp_counts.iteritems():
@@ -892,8 +901,8 @@ def tool_tips(widget):
 def dump_output(output):
     with open('./!data.out/Report.txt', 'w', encoding = 'utf-8') as fout:
         col = 70
-        fout.write(f"{FC_Auto_Analyser_Version}\nhttps://www.fabianocastello.com.br/fca2\n")
-        fout.write(f"Análise exploratória de dados gratuita, segura e colaborativa. Compartilhe!\n{'-'*col}\n")
+        fout.write(f"\n{FC_Auto_Analyser_Version}\nhttps://www.fabianocastello.com.br/fca2\n")
+        fout.write(f"Análise exploratória de dados gratuita,\nsegura e colaborativa. Compartilhe!\n{'-'*col}\n\n")
         for index, row in output.iterrows():
             if row['NewLine']: fout.write('\n')
             first_line = True
