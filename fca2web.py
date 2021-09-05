@@ -19,7 +19,7 @@ import streamlit as st
 from streamlit import caching
 import base64
 
-FC_Auto_Analyser_Version = 'fca2web beta 0.96 (2021SET05) '
+FC_Auto_Analyser_Version = 'fca2web beta 0.96 (2021SET05A) '
 
 #global UserAgents, runningOn, parâmetros, remarks, sizeKB
 runningOn =  socket.gethostname()
@@ -29,13 +29,16 @@ with open("./UserAgents.cfg",encoding='utf-8') as f:
      UserAgents = f.readlines(); f.close()
 UserAgents = [c.replace('\n','').strip() for c in UserAgents]
 
-if not runningOn == 'localhost':
+if 'LENOVO' in runningOn:
     import configparser
     config_parser = configparser.RawConfigParser()
     config_parser.read('./fca2web.ini')
     url_post_stat  = config_parser.get('RUN', 'url_post_stat')
-else:
+elif runningOn == 'localhost': #suggested running on streamlit share
     url_post_stat = st.secrets["url_post_stat"]
+else: #running on Heroku
+    url_post_stat = os.environ["url_post_stat"]
+
 
 caching.clear_cache()
 st.set_page_config(
