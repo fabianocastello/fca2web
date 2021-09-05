@@ -19,6 +19,8 @@ import streamlit as st
 from streamlit import caching
 import base64
 
+FC_Auto_Analyser_Version = 'fca2web beta 0.96 (2021SET05) '
+
 #global UserAgents, runningOn, parâmetros, remarks, sizeKB
 runningOn =  socket.gethostname()
 
@@ -168,6 +170,7 @@ def run():
       <li>identificação de colunas texto (categóricas), colunas numéricas inteiras e numéricas decimais.</li>
       <li>colunas texto: quantidade de registros, registros ausentes, duplicações e categorias, top "n" categorias.</li>
       <li>colunas numéricas: quantidade de registros, registros zerados, soma total, média, desvio, máximos e mínimos, amplitude, quartis. Mesmas análises para a base descontando os registros zerados, lembrando que zero é diferente de ausente :-).</li>
+      <li>colunas datetime: quantidade de registros, registros ausentes, duplicações, datas mais antiga, mais recente e média, amplitude do período de análise e "filling", quantidade de datas por quartis (Q1, Q2, Q3) e uma distribuição visual geral.</li>
     </ul></span><span style="font-size:16px ;line-height: 25px"><br>
     Desenvolvido originalmente por Fabiano Castello (<a target="_blank" href ="http://www.fabianocastello.com.br">www.fabianocastello.com.br</a>), é disponibilizado <b>gratuitamente</b> sob licença CC BY 4.0 para a comunidade. O código original está registrado sob DOI <a target="_blank" href ="http://doi.org/10.6084/m9.figshare.9902417">doi.org/10.6084/m9.figshare.9902417</a>. A versão web foi criada em streamlit e está disponível em (<a target="_blank" href ="http://www.github.com/fabianocastello/fca2web">www.github.com/fabianocastello/fca2web</a>). Se você usar esta aplicação em um artigo ou publicação pode incluir a citação "Castello, Fabiano (2019): <i>Python Code: FC Auto Analyser (FCA2)</i>. figshare. Software. https://doi.org/10.6084/m9.figshare.9902417.v1".</span> </p><br>
     
@@ -175,7 +178,7 @@ def run():
     <p style="font-size:16px;margin-bottom: -5px<span style="font-size:10px ;margin-bottom: -5px;"> 
     <ul style="margin-bottom: -5px;">
       <li>análises de colunas datetime (set/21).</li>
-      <li>links para compartilhar no facebook, twitter e whatsapp (set/21).</li>
+      <li>links para compartilhar no Facebook, Twitter e Whatsapp (set/21).</li>
       <li>formatos Feather e Pickle (em beta) (ago/21).</li>
       <li>download do relatório da análise em TXT (ago/21).</li>
       <li>melhorias na formatação do relatório (ago/21).</li>
@@ -229,8 +232,6 @@ max_freq  = 10 #numeros de categorias máximas nos campos texto
 hist_bins = 10 #qte de bins no histograma 
 max_dups  =  5 #qte de exemplos de duplicados 
 sampleN    =  5 #qte de exemplos da coluna 
-
-FC_Auto_Analyser_Version = 'fca2web beta 0.96 (2021SET04) '
 
 #Criando diretórios se inexistentes
 dirs = ['!data.tmp','!data.out','!data.log','!data.in']
