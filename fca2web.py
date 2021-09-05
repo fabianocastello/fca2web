@@ -255,7 +255,7 @@ def post_stat_fca2(filename, sizeKB, parâmetros, elap,remarks=''):
                   'entry.225285568' : runningOn,
                   'entry.1052496244': remarks }
     return(requests.post(url_post_stat+'/formResponse', data=form_data, headers=
-                 {'Referer':url_post_stat+'/viewform',
+                 {'Referer':url_post_stat.strip()+'/viewform',
                   'User-Agent': UserAgents[randrange(len(UserAgents))]}))
 
 global msg_count
