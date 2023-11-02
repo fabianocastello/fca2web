@@ -715,7 +715,7 @@ def analysis_df(df,file):
         ## CAMPOS TEXTO
         log_write("### Análise das colunas tipo <b>TEXTO</b>", newline=True) 
         for x in df.columns:
-            if df[x].dtype == np.object:
+            if df[x].dtype == object:
                 xext = xext + sep(xqte) +x  ; xqte += 1 
                 log_write(str(xqte)+") "+ x + " ["+x.upper()+"]",newline=True) 
                 ctmp = df[x]
@@ -783,7 +783,7 @@ def analysis_df(df,file):
             if 'int'   in  str(df[x].dtype) or\
                'float' in  str(df[x].dtype):
                 xqte += 1 
-                tipo = '[INTEIRO]' if df[x].dtype == np.int64 else '[DECIMAL]'
+                tipo = '[INTEIRO]' if df[x].dtype == int64 else '[DECIMAL]'
                 log_write(str(xqte)+") "+ x + " ["+x.upper()+f"] {tipo}",newline=True) 
     
                 if df[x].sum() == 0:   
