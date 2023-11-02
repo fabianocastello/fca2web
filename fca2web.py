@@ -741,7 +741,7 @@ def analysis_df(df,file):
                     log_write("[       f.abs] [f.rel%] [f.acc%] categorias (max="+'{:n})'.format(max_freq), addcont=False,newline=True) 
                     freq     = 0
                     freq_acc = 0
-                    for key, value in ctmp_counts.iteritems():
+                    for key, value in ctmp_counts.items():
                         key2show = str(key) if len(str(key))<= 35 else str(key)[:35]+'\\' 
                         if freq <= max_freq:
                             freq += 1
@@ -964,7 +964,7 @@ def analysis_df(df,file):
                     log_write("[       f.abs] [f.rel%] [f.acc%] categorias (max="+'{:n})'.format(max_freq), addcont=False,newline=True) 
                     freq     = 0
                     freq_acc = 0
-                    for key, value in ctmp_counts.iteritems():
+                    for key, value in ctmp_counts.items():
                         key = key.strftime('%Y-%m-%d')
                         key2show = str(key) if len(str(key))<= 35 else str(key)[:35]+'\\' 
                         if freq <= max_freq:
