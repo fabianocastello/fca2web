@@ -279,13 +279,23 @@ def log_write(msg, newline=False, addcont=True):
     else:
         full_msg  = (f'{ident+msg}').strip()
         
-    output = output.append({
-                   'TS'      : datetime.today(),
-                   'Row'     : msgCstr,
-                   'Content' : msg,
-                   'NewLine' : newline,
+    # output = output.append({
+                   # 'TS'      : datetime.today(),
+                   # 'Row'     : msgCstr,
+                   # 'Content' : msg,
+                   # 'NewLine' : newline,
                    
-                   },ignore_index=True)
+                   # },ignore_index=True)
+                   
+    new_data = pd.DataFrame({
+        'TS': [datetime.today()],
+        'Row': [msgCstr],
+        'Content': [msg],
+        'NewLine': [newline]
+    })
+    output = pd.concat([output, new_data], ignore_index=True)
+
+                   
                    
                    
     first_msg = full_msg[:cut].replace(' ', '&nbsp;').replace('\n', '<br>')
@@ -432,8 +442,14 @@ def analysis(file):
 def custom_df(df):
     custom = pd.DataFrame(columns = ['Índice','Coluna','Type','Tipo','Custom','CustomType'])
     for c in df.columns:
-        custom = custom.append({'Coluna': c,
-                                'Type'  : df[c].dtype}, ignore_index=True)
+        # custom = custom.append({'Coluna': c,
+                                # 'Type'  : df[c].dtype}, ignore_index=True)
+        new_data = pd.DataFrame({
+            'Coluna': [c],
+            'Type': [df[c].dtype]
+        })
+        custom = pd.concat([custom, new_data], ignore_index=True)
+                                
     custom['Índice'] = custom.index+1
     for index, row in custom.iterrows():
         if 'Unnamed' in row['Coluna']:
