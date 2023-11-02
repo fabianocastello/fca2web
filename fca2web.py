@@ -783,7 +783,7 @@ def analysis_df(df,file):
             if 'int'   in  str(df[x].dtype) or\
                'float' in  str(df[x].dtype):
                 xqte += 1 
-                tipo = '[INTEIRO]' if df[x].dtype == int64 else '[DECIMAL]'
+                tipo = '[INTEIRO]' if df[x].dtype == int else '[DECIMAL]'
                 log_write(str(xqte)+") "+ x + " ["+x.upper()+f"] {tipo}",newline=True) 
     
                 if df[x].sum() == 0:   
